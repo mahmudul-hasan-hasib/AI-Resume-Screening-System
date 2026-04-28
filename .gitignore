@@ -1,0 +1,57 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environment
+venv/
+env/
+ENV/
+.venv/
+
+# Environment variables
+.env
+.env.*
+
+# VS Code / IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Database
+*.sqlite3
+
+# Python packaging
+build/
+dist/
+*.egg-info/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# ML models (optional - be careful)
+*.pkl
+*.joblib
+*.h5
+
+# Uploads (important for your project)
+uploads/
+media/
+
+# Temporary files
+tmp/
+temp/
+
+# Coverage / testing
+.coverage
+htmlcov/
+
+# FastAPI cache / runtime
+*.pid
+*.sock
