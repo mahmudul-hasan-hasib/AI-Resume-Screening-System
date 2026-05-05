@@ -2,27 +2,53 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FileUpload } from './FileUpload';
 import { ArrowRight, Sparkles } from 'lucide-react';
-
+import axios from "axios";
 export function UploadPage() {
   const [files, setFiles] = useState<File[]>([]);
   const [jobDescription, setJobDescription] = useState('');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const navigate = useNavigate();
+  
 
-  const handleAnalyze = () => {
+  const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+
+  const handleAnalyze = async () => {
     if (files.length === 0 || !jobDescription.trim()) return;
+  
+    if (files.some(f => !f.name.endsWith(".pdf"))) {
+      alert("Only PDF files allowed");
+      return;
+    }
 
     setIsAnalyzing(true);
 
-    setTimeout(() => {
-      setIsAnalyzing(false);
-      navigate('/results', {
-        state: {
-          files: files.map(f => f.name),
-          jobDescription
+    try {
+      const formData = new FormData();
+      files.forEach(file => formData.append("files", file));
+
+      const uploadRes = await axios.post(
+        `${API_BASE}/upload-cv`,
+        formData
+      );
+
+      const analyzeRes = await axios.post(
+        `${API_BASE}/analyze`,
+        {
+          job_description: jobDescription,
+          files: uploadRes.data.files
         }
+      );
+
+      navigate("/results", {
+        state: { results: analyzeRes.data.results }
       });
-    }, 2500);
+
+    } catch (err) {
+      console.error(err);
+      alert("Failed to analyze resumes");
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   return (
