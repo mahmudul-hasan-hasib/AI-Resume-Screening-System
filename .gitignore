@@ -57,3 +57,4 @@ htmlcov/
 *.sock
 # Node
 node_modules/
+backend/test.db
