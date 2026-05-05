@@ -13,43 +13,70 @@ export function UploadPage() {
   const API_BASE = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
 
   const handleAnalyze = async () => {
-    if (files.length === 0 || !jobDescription.trim()) return;
-  
-    if (files.some(f => !f.name.endsWith(".pdf"))) {
-      alert("Only PDF files allowed");
-      return;
-    }
+  if (files.length === 0 || !jobDescription.trim()) return;
 
-    setIsAnalyzing(true);
+  if (files.some(f => !f.name.endsWith(".pdf"))) {
+    alert("Only PDF files allowed");
+    return;
+  }
 
-    try {
-      const formData = new FormData();
-      files.forEach(file => formData.append("files", file));
+  setIsAnalyzing(true);
 
-      const uploadRes = await axios.post(
-        `${API_BASE}/upload-cv`,
-        formData
-      );
+  try {
+    // 🔼 1. Upload files
+    const formData = new FormData();
+    files.forEach(file => formData.append("files", file));
 
-      const analyzeRes = await axios.post(
-        `${API_BASE}/analyze`,
-        {
-          job_description: jobDescription,
-          files: uploadRes.data.files
+    const uploadRes = await axios.post(
+      `${API_BASE}/upload-cv`,
+      formData
+    );
+
+    const uploadedFiles = uploadRes.data.files;
+
+    // 🧠 2. Start analyze (returns task_id)
+    const analyzeRes = await axios.post(
+      `${API_BASE}/analyze`,
+      {
+        job_description: jobDescription,
+        files: uploadedFiles
+      }
+    );
+
+    const taskId = analyzeRes.data.task_id;
+
+    // 🔁 3. Polling function
+    const checkStatus = async () => {
+      try {
+        const res = await axios.get(`${API_BASE}/task-status/${taskId}`);
+
+        if (res.data.status === "SUCCESS") {
+          // ✅ DONE → get result
+          navigate("/results", {
+            state: { results: res.data.result }
+          });
+        } else if (res.data.status === "FAILURE") {
+          alert("Analysis failed");
+          setIsAnalyzing(false);
+        } else {
+          // ⏳ still processing → check again
+          setTimeout(checkStatus, 2000);
         }
-      );
+      } catch (err) {
+        console.error(err);
+        setIsAnalyzing(false);
+      }
+    };
 
-      navigate("/results", {
-        state: { results: analyzeRes.data.results }
-      });
+    // 🚀 start polling
+    checkStatus();
 
-    } catch (err) {
-      console.error(err);
-      alert("Failed to analyze resumes");
-    } finally {
-      setIsAnalyzing(false);
-    }
-  };
+  } catch (err) {
+    console.error(err);
+    alert("Failed to analyze resumes");
+    setIsAnalyzing(false);
+  }
+};
 
   return (
     <div className="min-h-[calc(100vh-80px)] bg-background">

@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+python-multipart
+PyMuPDF
+scikit-learn
+sqlalchemy
+psycopg2-binary
+celery
+redis
