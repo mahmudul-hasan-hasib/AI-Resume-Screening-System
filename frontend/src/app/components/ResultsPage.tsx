@@ -145,19 +145,7 @@ export function ResultsPage() {
                     </div>
                   </div>
                 )}
-
-                {/* 🔥 YOUR ADDED BLOCK (exact as you gave) */}
-                <div className="mt-4">
-                  <h3>{candidate.filename}</h3>
-                  <p>{candidate.score}%</p>
-
-                  <div>
-                    {candidate.matched_keywords?.map((k: string, i: number) => (
-                      <span key={i}>{k}</span>
-                    ))}
-                  </div>
-                </div>
-
+              
               </div>
             ))}
           </div>

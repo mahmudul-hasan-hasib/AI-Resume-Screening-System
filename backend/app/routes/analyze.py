@@ -5,6 +5,8 @@ import os
 
 from app.services.parser import extract_text_from_pdf
 from app.services.scorer import calculate_similarity
+from app.db import SessionLocal
+from app.models import Candidate
 
 router = APIRouter()
 
@@ -18,6 +20,8 @@ class AnalyzeRequest(BaseModel):
 
 @router.post("/analyze")
 def analyze(data: AnalyzeRequest):
+    db = SessionLocal()
+
     resume_texts = []
 
     # 🔍 Validation
@@ -47,19 +51,33 @@ def analyze(data: AnalyzeRequest):
 
         resume_texts.append(text)
 
-    # 🧠 Scoring (UPDATED)
+    # 🧠 Scoring
     results = calculate_similarity(data.job_description, resume_texts)
 
-    # 🔥 FINAL RESPONSE FORMAT
     final = []
+
     for i, res in enumerate(results):
+        score_percent = round(res["score"] * 100, 2)
+
+        # 🔥 Save to DB (no commit here)
+        candidate = Candidate(
+            filename=data.files[i],
+            score=score_percent,
+            keywords=",".join(res["matched_keywords"])
+        )
+        db.add(candidate)
+
         final.append({
             "filename": data.files[i],
-            "score": round(res["score"] * 100, 2),   # percentage
+            "score": score_percent,
             "matched_keywords": res["matched_keywords"]
         })
 
-    # 🔽 sort by best match
+    # 🔥 Commit once (important)
+    db.commit()
+    db.close()
+
+    # 🔽 sort results
     final = sorted(final, key=lambda x: x["score"], reverse=True)
 
     return {"results": final}

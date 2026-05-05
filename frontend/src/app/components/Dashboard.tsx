@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useState,useEffect } from 'react';
 import { Search, Filter, Download, ChevronDown, ChevronUp } from 'lucide-react';
+import axios from 'axios'; 
+
 
 interface CandidateRecord {
   id: string;
@@ -16,6 +18,12 @@ export function Dashboard() {
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [data, setData] = useState<any[]>([]);   // 🔥 NEW
+  useEffect(() => {
+  axios.get("http://127.0.0.1:8000/results")
+    .then(res => setData(res.data.results))
+    .catch(err => console.error(err));
+}, []);
 
   const mockData: CandidateRecord[] = [
     {
@@ -73,8 +81,16 @@ export function Dashboard() {
       position: 'Frontend Developer'
     }
   ];
-
-  const filteredData = mockData
+  const mappedData = data.map((c, index) => ({
+  id: index.toString(),
+  name: c.filename,
+  email: "N/A",
+  score: c.score,
+  status: "pending",
+  appliedDate: new Date().toISOString(),
+  position: "Resume Candidate"
+}));
+  const filteredData = mappedData
     .filter(candidate => {
       const matchesStatus = filterStatus === 'all' || candidate.status === filterStatus;
       const matchesSearch = candidate.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
