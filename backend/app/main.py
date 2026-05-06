@@ -1,13 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import upload, analyze
+
+from app.routes import upload, analyze, results
 from app.db import engine
 from app.models import Base
-from app.routes import results
 
 app = FastAPI()
 
-# 🔥 DB init (better)
+# 🔥 DB init
 @app.on_event("startup")
 def on_startup():
     Base.metadata.create_all(bind=engine)
@@ -15,7 +15,11 @@ def on_startup():
 # 🔥 CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # dev
+    allow_origins=[
+        "http://localhost:5173",
+        "https://ai-resume-screening-system-sepia.vercel.app",
+        "https://ai-resume-screening-system-dhrm6nesw.vercel.app"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -28,4 +32,6 @@ app.include_router(results.router)
 
 @app.get("/")
 def root():
-    return {"message": "Resume AI Backend Running 🚀"}
+    return {
+        "message": "Resume AI Backend Running 🚀"
+    }
