@@ -23,7 +23,7 @@ export function UploadPage() {
   setIsAnalyzing(true);
 
   try {
-    // 🔼 1. Upload files
+    // 🔼 Upload files
     const formData = new FormData();
     files.forEach(file => formData.append("files", file));
 
@@ -34,7 +34,7 @@ export function UploadPage() {
 
     const uploadedFiles = uploadRes.data.files;
 
-    // 🧠 2. Start analyze (returns task_id)
+    // 🧠 Analyze
     const analyzeRes = await axios.post(
       `${API_BASE}/analyze`,
       {
@@ -43,37 +43,17 @@ export function UploadPage() {
       }
     );
 
-    const taskId = analyzeRes.data.task_id;
-
-    // 🔁 3. Polling function
-    const checkStatus = async () => {
-      try {
-        const res = await axios.get(`${API_BASE}/task-status/${taskId}`);
-
-        if (res.data.status === "SUCCESS") {
-          // ✅ DONE → get result
-          navigate("/results", {
-            state: { results: res.data.result }
-          });
-        } else if (res.data.status === "FAILURE") {
-          alert("Analysis failed");
-          setIsAnalyzing(false);
-        } else {
-          // ⏳ still processing → check again
-          setTimeout(checkStatus, 2000);
-        }
-      } catch (err) {
-        console.error(err);
-        setIsAnalyzing(false);
+    // ✅ Navigate with results
+    navigate("/results", {
+      state: {
+        results: analyzeRes.data.results
       }
-    };
-
-    // 🚀 start polling
-    checkStatus();
+    });
 
   } catch (err) {
     console.error(err);
     alert("Failed to analyze resumes");
+  } finally {
     setIsAnalyzing(false);
   }
 };
