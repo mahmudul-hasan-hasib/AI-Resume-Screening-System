@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { FileUpload } from './FileUpload';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import axios from "axios";
+
+
 export function UploadPage() {
   const [files, setFiles] = useState<File[]>([]);
   const [jobDescription, setJobDescription] = useState('');

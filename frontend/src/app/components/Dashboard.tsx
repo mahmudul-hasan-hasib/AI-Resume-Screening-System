@@ -1,6 +1,7 @@
 import { useState,useEffect } from 'react';
 import { Search, Filter, Download, ChevronDown, ChevronUp } from 'lucide-react';
 import axios from 'axios'; 
+const API_BASE = import.meta.env.VITE_API_BASE;
 
 
 interface CandidateRecord {
@@ -20,7 +21,7 @@ export function Dashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [data, setData] = useState<any[]>([]);   // 🔥 NEW
   useEffect(() => {
-  axios.get("http://127.0.0.1:8000/results")
+  axios.get(`${API_BASE}/results`)
     .then(res => setData(res.data.results))
     .catch(err => console.error(err));
 }, []);
